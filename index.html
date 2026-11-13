@@ -48,7 +48,12 @@ p{margin:0}
 img,video,svg{display:block;max-width:100%}
 .wrap{max-width:1200px;margin-inline:auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 section{scroll-margin-top:84px}
-main{overflow-x:clip}
+main{overflow-x:clip;position:relative;--cluster:clamp(210px,24vw,340px)}
+.log{position:absolute;top:0;left:0;z-index:1;width:var(--cluster);pointer-events:none;will-change:transform;filter:drop-shadow(0 22px 22px rgba(0,0,0,.4))}
+.log-slot{width:var(--cluster);height:calc(var(--cluster)*.69);margin:calc(-1*clamp(72px,9vw,128px) + 6px) 0 0;pointer-events:none}
+.log svg{width:100%;height:auto;overflow:visible}
+.hero .wrap{position:relative;z-index:2}
+@media (prefers-reduced-motion:no-preference){.log{animation:logIn 1.2s var(--ease,cubic-bezier(.16,1,.3,1)) .4s both}@keyframes logIn{from{opacity:0}to{opacity:1}}}
 
 /* ---------- textured stock (all subtle: text always sits on a near-flat tone) ---------- */
 .bg-sand{background:var(--tex-sand) 0 0/520px 520px,var(--bg)}
@@ -233,11 +238,13 @@ main{overflow-x:clip}
 /* ---------- range + order ---------- */
 .range h2{font-size:clamp(2.6rem,6vw,4.8rem);text-transform:uppercase;font-weight:800;color:#F6EEE2}
 .rows{margin:36px 0 0;padding:0;list-style:none;border-top:2px solid rgba(246,238,226,.7)}
-.rows li{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) auto;gap:8px 24px;align-items:baseline;padding:20px 0;border-bottom:1px solid rgba(246,238,226,.32)}
+.rows li{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 190px;gap:8px 24px;align-items:baseline;padding:20px 0;border-bottom:1px solid rgba(246,238,226,.32)}
 .rows h3{font-size:clamp(1.6rem,2.8vw,2.2rem);text-transform:uppercase;letter-spacing:.02em;color:#FBF3E6}
 .rows p{color:#E2D5C3;font-size:1.04rem}
-.rows .tagk{display:inline-block;font-family:var(--font-data);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(246,238,226,.6);padding:2px 8px;border-radius:99px;margin-right:10px;vertical-align:1px}
+.rows p{display:flex;align-items:baseline;gap:14px}
+.rows .tagk{flex:none;width:13em;text-align:center;white-space:nowrap;box-sizing:border-box;font-family:var(--font-data);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(246,238,226,.6);padding:2px 8px;border-radius:99px}
 .rows a{font-family:var(--font-display);font-weight:700;font-size:1.02rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-bottom:2px solid currentColor;padding-bottom:2px;white-space:nowrap;color:#FBF3E6}
+.rows a{justify-self:end}
 @media (max-width:760px){.rows li{grid-template-columns:minmax(0,1fr)}.rows a{justify-self:start;margin-top:6px}}
 .order{margin-top:clamp(56px,7vw,88px)}
 .order h3{font-size:clamp(2rem,4vw,3rem);text-transform:uppercase;color:#F6EEE2;font-weight:800}
@@ -286,7 +293,80 @@ footer{padding-block:34px;font-size:.95rem;color:#D9CCBA}
 footer .wrap{display:flex;justify-content:space-between;gap:14px 32px;flex-wrap:wrap;align-items:center}
 footer .brand-name{color:#F3ECE2;display:inline}
 
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.nav a,.stop,.hero h1 a{transition:none}.btn:hover{transform:none}}
+.origin-row.mixed{margin-top:18px;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr)}
+@media (max-width:560px){.origin-row.mixed{grid-template-columns:minmax(0,1fr)}}
+.print .ph img,.print .ph video{transition:transform .9s cubic-bezier(.16,1,.3,1)}
+.print:hover .ph img{transform:scale(1.045)}
+.print{transition:box-shadow .4s}
+.print:hover{box-shadow:0 28px 36px -20px rgba(30,16,6,.65),0 2px 6px rgba(30,16,6,.25)}
+.rows li{transition:background-color .3s}
+.rows h3{transition:translate .45s cubic-bezier(.16,1,.3,1)}
+.rows li:hover h3{translate:10px 0}
+.rows a{transition:letter-spacing .3s,opacity .2s}.rows a:hover{letter-spacing:.2em}
+.nav a.on{background-size:100% 2px}
+.site-header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#A9CB93;transform:scaleX(0);transform-origin:0 50%}
+@supports (animation-timeline:scroll()){.site-header::after{animation:prog linear both;animation-timeline:scroll(root)}}
+@keyframes prog{to{transform:scaleX(1)}}
+
+/* ---------- motion: the printing-press story ----------
+   Lines of the hero headline are pressed on in turn; photographs "develop" from a faded proof into full print;
+   the container diagram loads pallet by pallet from the far wall to the door. Everything below runs only when
+   motion is allowed, and content stays visible if script never runs (the .js class gates every hidden state). */
+@media (prefers-reduced-motion:no-preference){
+  :root{--ease:cubic-bezier(.16,1,.3,1)}
+  .hero h1 a{animation:press 1s var(--ease) both}
+  .hero h1 a:nth-child(2){animation-delay:.14s}.hero h1 a:nth-child(3){animation-delay:.28s}
+  .hero .lede2{animation:rise .9s var(--ease) .55s both}
+  .hero .cta{animation:rise .9s var(--ease) .7s both}
+  .hero .ships{animation:rise .9s var(--ease) .85s both}
+  .site-header{animation:drop .8s var(--ease) both}
+  @keyframes press{from{clip-path:inset(0 100% 0 0);translate:-.15em 0;opacity:0}to{clip-path:inset(-10% -5% -20% -5%);translate:0 0;opacity:1}}
+  @keyframes rise{from{opacity:0;translate:0 22px}to{opacity:1;translate:0 0}}
+  @keyframes drop{from{translate:0 -100%}to{translate:0 0}}
+
+  /* photographs develop */
+  .js .print{opacity:0;translate:0 34px;transition:opacity .8s var(--ease) var(--d,0s),translate 1s var(--ease) var(--d,0s),box-shadow .4s}
+  .js .print .ph img,.js .print .ph video{filter:blur(12px) sepia(.7) saturate(.5) brightness(1.18) contrast(.85);scale:1.12;
+    transition:filter 1.5s ease-out var(--d,0s),scale 1.8s var(--ease) var(--d,0s),transform .9s var(--ease)}
+  .js .print.in{opacity:1;translate:0 0}
+  .js .print.in .ph img,.js .print.in .ph video{filter:saturate(.95) contrast(1.03);scale:1}
+
+  /* headings wipe on like a pressed line */
+  .js .stencil,.js .range h2,.js .why h2,.js .order h3{filter:blur(10px);translate:-.14em 0;opacity:0;
+    transition:filter 1s var(--ease),translate 1s var(--ease),opacity .7s var(--ease)}
+  .js .stencil.in,.js .range h2.in,.js .why h2.in,.js .order h3.in{filter:none;translate:0 0;opacity:1}
+
+  /* plain text blocks */
+  .js .rv{opacity:0;translate:0 20px;transition:opacity .8s var(--ease) var(--d,0s),translate .9s var(--ease) var(--d,0s)}
+  .js .rv.in{opacity:1;translate:0 0}
+
+  /* lists stagger */
+  .js [data-stag]>*{opacity:0;translate:0 22px;transition:opacity .7s var(--ease) calc(var(--i,0)*80ms),translate .8s var(--ease) calc(var(--i,0)*80ms),background-color .3s,border-color .2s}
+  .js [data-stag].in>*{opacity:1;translate:0 0}
+  .js .stops[data-stag]>*{translate:-18px 0}
+  .js .ledger .dots{transform:translateY(-4px) scaleX(0);transform-origin:0 50%;transition:transform .9s var(--ease) calc(var(--i,0)*80ms + .25s)}
+  .js .ledger.in .dots{transform:translateY(-4px) scaleX(1)}
+  .js .pillars div,.js .order li{border-top:0;position:relative}
+  .js .pillars div::before,.js .order li::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:0 50%;transition:transform 1s var(--ease) calc(var(--i,0)*80ms + .2s)}
+  .js .order li::before{background:#D9B286}
+  .js .pillars.in div::before,.js .order ol.in li::before{transform:scaleX(1)}
+  .js .checks svg path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .8s var(--ease) calc(var(--i,0)*80ms + .35s)}
+  .js .checks.in svg path{stroke-dashoffset:0}
+
+  /* container loads from the far wall to the door */
+  .js .container-fig .pal,.js .container-fig .opt{opacity:0;translate:46px 0;transition:opacity .5s ease-out var(--d,0s),translate .8s var(--ease) var(--d,0s)}
+  .js .container-fig.in .pal,.js .container-fig.in .opt{opacity:1;translate:0 0}
+  .js .container-fig .shell{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.4s var(--ease)}
+  .js .container-fig.in .shell{stroke-dashoffset:0}
+  .js .container-fig .door{opacity:0;transition:opacity .4s ease-out 1.8s}
+  .js .container-fig.in .door{opacity:1}
+
+  /* form feedback */
+  .sent.on{animation:rise .6s var(--ease) both}
+  .field.bad input{animation:nudge .4s ease-out}
+  @keyframes nudge{20%{translate:-6px 0}45%{translate:5px 0}70%{translate:-3px 0}100%{translate:0 0}}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.nav a,.stop,.hero h1 a,.print,.print img,.rows h3{transition:none}.btn:hover{transform:none}.print:hover .ph img{transform:none}.site-header::after{display:none}}
 </style>
 
 <header class="site-header" id="home">
@@ -308,6 +388,7 @@ footer .brand-name{color:#F3ECE2;display:inline}
 </header>
 
 <main>
+<div class="log" aria-hidden="true"><svg viewBox="0 0 400 276" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cb-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B85A2B"/><stop offset="1" stop-color="#9C4521"/></linearGradient><radialGradient id="cn-g" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#8A6238"/><stop offset="1" stop-color="#3E2812"/></radialGradient></defs><polygon points="230,150 274,126 274,198 230,222" fill="#8A3F1C"/><polygon points="43,150 84,126 270,126 227,150" fill="#E0A263"/><rect x="40" y="150" width="190" height="72" rx="5" fill="url(#cb-f)"/><g fill="none" stroke-width="1.4" stroke-linecap="round" opacity=".7"><path d="M44.0 212.9Q49.4 210.8 53.0 208.4" stroke="#7A3414"/><path d="M103.9 202.1Q112.9 203.2 120.5 203.3" stroke="#D58A52"/><path d="M192.6 169.5Q198.8 169.5 203.3 173.2" stroke="#6A2C10"/><path d="M168.5 183.9Q175.3 188.5 185.1 192.9" stroke="#7A3414"/><path d="M212.0 198.1Q221.1 200.6 226.9 199.9" stroke="#D58A52"/><path d="M111.7 175.5Q118.9 172.3 128.8 170.8" stroke="#6A2C10"/><path d="M122.0 172.9Q132.4 175.3 141.0 174.6" stroke="#7A3414"/><path d="M54.7 171.5Q61.3 170.4 68.5 171.7" stroke="#D58A52"/><path d="M209.4 157.5Q215.5 157.8 220.2 154.8" stroke="#6A2C10"/><path d="M137.7 164.6Q142.7 162.3 148.7 160.6" stroke="#7A3414"/><path d="M104.5 188.0Q112.8 184.8 117.8 182.0" stroke="#D58A52"/><path d="M201.1 194.6Q208.5 195.6 215.9 195.0" stroke="#6A2C10"/><path d="M215.0 179.4Q222.7 175.7 229.7 173.2" stroke="#7A3414"/><path d="M104.2 179.1Q109.7 185.2 118.3 188.8" stroke="#D58A52"/><path d="M58.1 180.0Q63.3 176.4 64.5 174.9" stroke="#6A2C10"/><path d="M159.1 163.2Q163.8 165.8 171.4 165.1" stroke="#7A3414"/><path d="M205.0 211.0Q213.3 215.7 219.6 222.2" stroke="#D58A52"/><path d="M45.9 169.9Q48.8 166.3 50.8 164.8" stroke="#6A2C10"/><path d="M178.9 185.3Q187.6 181.1 193.2 179.0" stroke="#7A3414"/><path d="M112.1 211.2Q113.9 212.8 119.7 211.1" stroke="#D58A52"/><path d="M159.9 213.0Q161.2 216.8 165.0 216.8" stroke="#6A2C10"/><path d="M146.9 197.5Q150.1 195.7 155.7 193.3" stroke="#7A3414"/><path d="M53.5 203.2Q61.0 204.0 68.4 208.6" stroke="#D58A52"/><path d="M64.1 212.8Q69.4 212.1 71.6 215.1" stroke="#6A2C10"/><path d="M204.7 209.1Q213.2 215.4 219.6 222.4" stroke="#7A3414"/><path d="M89.2 200.6Q97.2 198.7 107.3 197.6" stroke="#D58A52"/><path d="M205.4 189.8Q211.7 190.2 216.1 191.9" stroke="#6A2C10"/><path d="M176.0 181.1Q182.1 181.7 184.4 178.5" stroke="#7A3414"/><path d="M159.1 209.8Q168.0 204.0 175.8 201.1" stroke="#D58A52"/><path d="M134.5 189.7Q140.8 193.9 147.2 200.7" stroke="#6A2C10"/><path d="M125.3 164.6Q133.2 164.9 140.6 165.2" stroke="#7A3414"/><path d="M181.8 177.2Q187.0 171.7 193.8 165.8" stroke="#D58A52"/><path d="M80.9 200.3Q86.1 197.9 90.1 196.1" stroke="#6A2C10"/><path d="M57.7 203.5Q66.2 209.6 71.5 214.3" stroke="#7A3414"/></g><g fill="none" stroke-width="1.3" stroke-linecap="round" opacity=".55"><path d="M260.4 129.5Q269.6 132.4 276.9 132.2" stroke="#B8672E"/><path d="M90.8 131.6Q92.0 127.5 96.6 127.4" stroke="#F0C28A"/><path d="M195.3 147.0Q197.8 145.3 202.6 142.2" stroke="#B8672E"/><path d="M128.8 137.7Q139.3 137.5 148.5 135.2" stroke="#F0C28A"/><path d="M157.0 136.9Q161.4 137.4 163.3 134.0" stroke="#B8672E"/><path d="M112.0 146.6Q116.3 143.3 122.8 139.1" stroke="#F0C28A"/><path d="M115.4 130.5Q120.4 131.5 124.9 132.8" stroke="#B8672E"/><path d="M266.9 130.4Q270.5 126.7 278.1 127.0" stroke="#F0C28A"/><path d="M160.1 130.7Q164.8 134.7 167.3 136.6" stroke="#B8672E"/><path d="M164.4 145.2Q173.7 150.0 181.6 154.3" stroke="#F0C28A"/><path d="M148.0 136.7Q154.8 137.6 161.0 136.6" stroke="#B8672E"/><path d="M206.4 141.0Q214.4 147.7 219.6 150.4" stroke="#F0C28A"/></g><polygon points="228,84 272,60 272,126 228,150" fill="#8A3F1C"/><polygon points="59,84 100,60 268,60 225,84" fill="#E0A263"/><rect x="56" y="84" width="172" height="66" rx="5" fill="url(#cb-f)"/><g fill="none" stroke-width="1.4" stroke-linecap="round" opacity=".7"><path d="M131.8 116.2Q138.3 121.3 145.9 129.6" stroke="#7A3414"/><path d="M116.2 139.2Q125.4 143.3 131.0 145.1" stroke="#D58A52"/><path d="M94.0 101.8Q102.5 97.9 107.8 91.6" stroke="#6A2C10"/><path d="M164.2 129.3Q172.4 128.9 177.6 128.0" stroke="#7A3414"/><path d="M203.3 103.7Q210.6 101.6 218.8 102.0" stroke="#D58A52"/><path d="M156.6 101.4Q164.0 106.7 172.8 110.6" stroke="#6A2C10"/><path d="M203.9 94.7Q205.9 96.5 211.9 101.2" stroke="#7A3414"/><path d="M125.2 89.3Q130.2 92.8 137.8 98.6" stroke="#D58A52"/><path d="M215.4 128.6Q219.3 124.2 222.3 123.7" stroke="#6A2C10"/><path d="M193.2 122.3Q199.3 118.5 206.8 113.1" stroke="#7A3414"/><path d="M216.6 119.8Q223.9 123.8 229.5 125.9" stroke="#D58A52"/><path d="M158.0 93.8Q160.2 94.7 164.5 95.0" stroke="#6A2C10"/><path d="M101.2 100.9Q109.6 101.4 115.5 104.0" stroke="#7A3414"/><path d="M208.5 91.1Q217.4 90.5 224.0 88.7" stroke="#D58A52"/><path d="M192.0 94.1Q202.7 93.8 210.8 94.1" stroke="#6A2C10"/><path d="M202.1 133.9Q209.9 137.5 214.9 143.7" stroke="#7A3414"/><path d="M178.0 97.0Q182.8 97.7 183.9 102.1" stroke="#D58A52"/><path d="M72.6 103.2Q82.4 107.6 88.5 113.9" stroke="#6A2C10"/><path d="M92.5 89.7Q97.3 89.6 105.0 90.9" stroke="#7A3414"/><path d="M138.9 101.2Q139.8 99.4 143.9 96.6" stroke="#D58A52"/><path d="M136.7 134.9Q145.6 134.6 152.9 135.2" stroke="#6A2C10"/><path d="M160.6 144.0Q167.6 150.1 173.0 155.3" stroke="#7A3414"/><path d="M191.6 97.9Q195.5 98.9 198.1 100.4" stroke="#D58A52"/><path d="M149.3 110.4Q152.9 105.1 160.0 103.1" stroke="#6A2C10"/><path d="M118.1 108.0Q120.9 107.2 126.7 109.9" stroke="#7A3414"/><path d="M60.3 136.5Q68.1 129.7 73.8 124.4" stroke="#D58A52"/><path d="M126.0 140.7Q134.0 133.5 138.2 128.6" stroke="#6A2C10"/><path d="M165.4 112.8Q169.2 112.2 171.0 109.6" stroke="#7A3414"/><path d="M100.9 137.7Q109.0 134.4 117.5 132.7" stroke="#D58A52"/><path d="M101.5 139.1Q110.3 143.2 119.0 144.2" stroke="#6A2C10"/><path d="M194.4 135.2Q201.3 140.0 206.6 146.5" stroke="#7A3414"/><path d="M176.8 106.8Q185.9 102.8 192.3 97.5" stroke="#D58A52"/><path d="M193.8 115.1Q199.4 118.3 208.6 123.7" stroke="#6A2C10"/><path d="M92.1 89.4Q98.8 94.1 104.4 96.1" stroke="#7A3414"/></g><g fill="none" stroke-width="1.3" stroke-linecap="round" opacity=".55"><path d="M243.7 78.5Q247.9 78.4 252.5 79.3" stroke="#B8672E"/><path d="M189.3 77.3Q195.9 75.0 202.4 74.8" stroke="#F0C28A"/><path d="M216.8 77.7Q221.9 75.9 226.1 73.8" stroke="#B8672E"/><path d="M255.7 73.8Q261.2 75.2 266.0 75.5" stroke="#F0C28A"/><path d="M194.8 66.1Q197.8 64.0 202.1 61.0" stroke="#B8672E"/><path d="M245.2 75.2Q250.3 72.4 256.3 72.5" stroke="#F0C28A"/><path d="M125.7 64.0Q130.3 63.3 138.1 61.5" stroke="#B8672E"/><path d="M167.0 71.7Q169.3 72.8 173.3 75.5" stroke="#F0C28A"/><path d="M120.2 66.9Q126.0 64.4 130.9 61.3" stroke="#B8672E"/><path d="M225.2 77.9Q231.3 80.0 235.9 85.1" stroke="#F0C28A"/><path d="M203.6 77.0Q214.6 77.3 221.9 79.3" stroke="#B8672E"/><path d="M265.1 63.7Q270.1 64.2 272.2 61.5" stroke="#F0C28A"/></g><clipPath id="cc1"><circle cx="334" cy="178" r="46"/></clipPath><circle cx="334" cy="178" r="46" fill="url(#cn-g)"/><g clip-path="url(#cc1)" fill="none" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M330.2 155.7q3.6 -0.0 7.2 -0.0" stroke="#2E1B0C"/><path d="M335.3 170.4q5.5 2.8 10.9 5.7" stroke="#8E6535"/><path d="M299.7 158.7q0.7 -3.8 1.3 -7.6" stroke="#8E6535"/><path d="M332.0 156.8q5.1 1.2 10.3 2.4" stroke="#2E1B0C"/><path d="M333.2 176.3q5.6 1.0 11.2 2.0" stroke="#8E6535"/><path d="M349.9 154.8q4.6 2.2 9.1 4.4" stroke="#8E6535"/><path d="M317.9 160.9q2.0 -4.0 4.0 -8.0" stroke="#2E1B0C"/><path d="M351.6 157.5q5.5 4.1 11.0 8.3" stroke="#8E6535"/><path d="M332.6 139.2q5.0 1.1 9.9 2.2" stroke="#8E6535"/><path d="M337.2 187.5q-4.4 1.2 -8.7 2.4" stroke="#2E1B0C"/><path d="M356.5 184.9q-4.2 4.3 -8.3 8.7" stroke="#8E6535"/><path d="M344.9 184.5q-2.9 4.4 -5.8 8.8" stroke="#8E6535"/><path d="M329.1 188.9q-2.6 -1.2 -5.2 -2.3" stroke="#2E1B0C"/><path d="M310.1 188.9q-1.2 -4.6 -2.4 -9.2" stroke="#8E6535"/><path d="M310.5 188.7q1.0 -6.5 1.9 -12.9" stroke="#8E6535"/><path d="M300.5 186.1q0.3 -6.9 0.6 -13.8" stroke="#2E1B0C"/><path d="M312.5 192.7q-1.7 -2.1 -3.5 -4.2" stroke="#8E6535"/><path d="M368.3 184.2q-0.1 3.0 -0.3 6.0" stroke="#8E6535"/><path d="M329.4 170.1q2.7 -2.6 5.4 -5.1" stroke="#2E1B0C"/><path d="M334.8 165.3q4.8 2.3 9.6 4.6" stroke="#8E6535"/><path d="M368.0 181.1q-3.1 5.8 -6.2 11.7" stroke="#8E6535"/><path d="M336.9 177.1q1.9 2.7 3.9 5.4" stroke="#2E1B0C"/><path d="M353.6 175.9q-0.2 3.7 -0.4 7.5" stroke="#8E6535"/><path d="M349.0 152.8q6.0 1.1 11.9 2.1" stroke="#8E6535"/><path d="M353.2 194.8q-2.5 5.3 -5.0 10.6" stroke="#2E1B0C"/><path d="M330.1 194.3q-5.1 -3.1 -10.2 -6.1" stroke="#8E6535"/><path d="M329.6 173.2q6.6 -0.8 13.3 -1.6" stroke="#8E6535"/><path d="M312.0 157.8q3.1 -1.0 6.1 -2.0" stroke="#2E1B0C"/><path d="M341.7 190.0q-4.9 2.8 -9.8 5.6" stroke="#8E6535"/><path d="M294.3 187.1q-0.2 -4.5 -0.4 -9.0" stroke="#8E6535"/></g><g fill="#24140A"><circle cx="324.8" cy="158.68" r="4.14"/><circle cx="343.2" cy="158.68" r="4.14"/><circle cx="334" cy="168.8" r="4.14"/></g><clipPath id="cc2"><circle cx="292" cy="236" r="32"/></clipPath><circle cx="292" cy="236" r="32" fill="url(#cn-g)"/><g clip-path="url(#cc2)" fill="none" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M290.4 233.5q2.4 -2.2 4.8 -4.4" stroke="#2E1B0C"/><path d="M297.1 227.8q5.2 4.6 10.5 9.2" stroke="#8E6535"/><path d="M301.5 246.0q-2.1 4.3 -4.2 8.6" stroke="#8E6535"/><path d="M269.2 229.9q0.5 -4.4 0.9 -8.9" stroke="#2E1B0C"/><path d="M308.7 243.5q-0.8 4.4 -1.6 8.8" stroke="#8E6535"/><path d="M292.3 235.5q4.3 5.0 8.5 10.1" stroke="#8E6535"/><path d="M306.8 223.7q1.2 5.4 2.4 10.9" stroke="#2E1B0C"/><path d="M288.9 255.2q-4.5 1.0 -9.0 1.9" stroke="#8E6535"/><path d="M293.8 237.8q-2.2 1.7 -4.4 3.4" stroke="#8E6535"/><path d="M296.7 240.4q-3.5 2.1 -7.1 4.2" stroke="#2E1B0C"/><path d="M292.2 243.1q-5.4 -1.9 -10.8 -3.9" stroke="#8E6535"/><path d="M281.5 213.5q2.9 -1.7 5.7 -3.3" stroke="#8E6535"/><path d="M280.9 232.6q1.7 -4.9 3.3 -9.8" stroke="#2E1B0C"/><path d="M268.0 228.0q2.2 -5.9 4.4 -11.9" stroke="#8E6535"/><path d="M274.3 257.8q-1.9 -5.5 -3.7 -11.0" stroke="#8E6535"/><path d="M294.0 263.6q-6.4 -1.8 -12.8 -3.6" stroke="#2E1B0C"/><path d="M275.0 228.3q1.5 -6.3 3.1 -12.7" stroke="#8E6535"/><path d="M279.4 237.5q1.5 -5.8 3.0 -11.5" stroke="#8E6535"/><path d="M285.7 219.5q2.3 -1.1 4.6 -2.1" stroke="#2E1B0C"/><path d="M293.0 219.9q2.6 0.6 5.1 1.3" stroke="#8E6535"/><path d="M292.3 235.9q1.1 6.7 2.2 13.4" stroke="#8E6535"/><path d="M268.3 228.7q5.0 -4.4 9.9 -8.8" stroke="#2E1B0C"/><path d="M312.4 243.4q-2.6 3.2 -5.2 6.4" stroke="#8E6535"/><path d="M302.1 242.3q-1.3 2.5 -2.7 5.0" stroke="#8E6535"/><path d="M285.8 242.6q-3.9 -1.6 -7.9 -3.3" stroke="#2E1B0C"/><path d="M282.4 243.2q-1.2 -6.0 -2.4 -12.0" stroke="#8E6535"/><path d="M304.1 240.1q-2.8 4.2 -5.7 8.4" stroke="#8E6535"/><path d="M294.2 238.5q-2.2 3.7 -4.3 7.5" stroke="#2E1B0C"/><path d="M288.8 254.9q-2.4 -2.3 -4.8 -4.6" stroke="#8E6535"/><path d="M304.1 225.4q2.0 2.5 4.0 5.0" stroke="#8E6535"/></g><g fill="#24140A"><circle cx="285.6" cy="222.56" r="2.88"/><circle cx="298.4" cy="222.56" r="2.88"/><circle cx="292" cy="229.6" r="2.88"/></g><path d="M40 246A38 38 0 0 0 116 246Z" fill="url(#cn-g)"/><ellipse cx="78" cy="246" rx="38" ry="11" fill="#6B4226"/><ellipse cx="78" cy="246" rx="33" ry="8.5" fill="#F6EEE2"/><ellipse cx="78" cy="247" rx="22" ry="5" fill="#E4D6C0"/></svg></div>
 <section class="hero bg-deep" aria-labelledby="hero-title">
   <div class="wrap">
     <div>
@@ -341,6 +422,7 @@ footer .brand-name{color:#F3ECE2;display:inline}
 <section class="sec about bg-sand" id="about" aria-labelledby="about-title">
   <div class="wrap about-grid">
     <div>
+      <div class="log-slot" aria-hidden="true"></div>
       <h2 class="stencil" id="about-title">Thirty years in coir.</h2>
       <p class="lead">Origin Trading Company has worked in the coir industry for 30 years from Chennai. Cocopeat is what buyers know us for. The same expertise runs through the other coir products and commodities we export.</p>
       <div class="pillars">
@@ -395,6 +477,19 @@ footer .brand-name{color:#F3ECE2;display:inline}
         <figure class="print"><div class="ph"><img src="img/husk-2.webp" alt="Coconut husk piled beside a hand cart" loading="lazy"></div><figcaption>Husk comes in by the load</figcaption></figure>
         <figure class="print"><div class="ph"><img src="img/mach-1.webp" alt="Processing machine and hopper in the plant" loading="lazy" style="object-position:50% 30%"></div><figcaption>Machines separate fibre from pith</figcaption></figure>
         <figure class="print"><div class="ph"><img src="img/dry-wide.webp" alt="Covered yard with raked rows of drying pith" loading="lazy"></div><figcaption>Dried in a covered yard</figcaption></figure>
+      </div>
+      <div class="origin-row mixed">
+        <figure class="print"><div class="ph" style="--ar:3/4"><img src="img/husk-mound-palms.jpg" alt="A tall heap of coconut husks with coir fibre in the foreground and palms behind" loading="lazy" width="721" height="1600" style="object-position:50% 40%"></div><figcaption>Husk heaped under the palms</figcaption></figure>
+        <figure class="print"><div class="ph" style="--ar:3/4"><img src="img/husk-mound-sky.jpg" alt="A hillside of stacked coconut husks against a blue sky" loading="lazy" width="721" height="1600" style="object-position:50% 70%"></div><figcaption>Stock for the line</figcaption></figure>
+        <figure class="print"><div class="ph" style="--ar:4/3"><img src="img/husk-chips-drying-yard.jpg" alt="Husk chips spread across an open drying yard" loading="lazy" width="1040" height="488"></div><figcaption>Open drying yard</figcaption></figure>
+      </div>
+    </div>
+    <div class="origin">
+      <h3>Dried under cover</h3>
+      <div class="origin-row shed">
+        <figure class="print"><div class="ph" style="--ar:3/4"><img src="img/drying-shed-floor.jpg" alt="Pith spread across the floor of a steel-framed drying shed" loading="lazy" width="721" height="1600" style="object-position:50% 60%"></div><figcaption>Pith raked flat across the floor</figcaption></figure>
+        <figure class="print"><div class="ph" style="--ar:3/4"><img src="img/drying-shed-trusses.jpg" alt="Steel trusses and a translucent roof above a long drying floor" loading="lazy" width="721" height="1600" style="object-position:50% 45%"></div><figcaption>Translucent roof, steel trusses</figcaption></figure>
+        <figure class="print"><div class="ph" style="--ar:3/4"><img src="img/drying-shed-worker.jpg" alt="Wheel tracks across the drying floor with a worker in the distance" loading="lazy" width="721" height="1600" style="object-position:50% 50%"></div><figcaption>Turned by hand and wheel</figcaption></figure>
       </div>
     </div>
   </div>
@@ -490,6 +585,10 @@ footer .brand-name{color:#F3ECE2;display:inline}
       <figure class="print" style="--c:3"><div class="ph" style="--ar:3/4"><img src="img/container-1.webp" alt="Two wrapped pallets loaded inside a container" loading="lazy"></div><figcaption>Loaded in the container</figcaption></figure>
       <figure class="print" style="--c:5"><div class="ph" style="--ar:5/4"><img src="img/trucks-yard.webp" alt="Pallets lined up in the yard with trucks behind" loading="lazy" style="object-position:50% 60%"></div><figcaption>Pallets in the yard</figcaption></figure>
       <figure class="print" style="--c:4"><div class="ph" style="--ar:1/1"><img src="img/truck-night.webp" alt="A truck loaded high with blocks inside the shed at night" loading="lazy" style="object-position:50% 55%"></div><figcaption>Truck loaded for the port</figcaption></figure>
+      <figure class="print" style="--c:7"><div class="ph" style="--ar:4/3"><img src="img/pallets-wrapped-warehouse.jpg" alt="A row of stretch-wrapped, strapped pallets of blocks in the warehouse" loading="lazy" width="841" height="651"></div><figcaption>Wrapped and strapped in the warehouse</figcaption></figure>
+      <figure class="print hot" style="--c:5"><div class="ph" style="--ar:3/4"><img src="img/pallets-strapped-yard.jpg" alt="A tall strapped pallet of coco blocks in the yard" loading="lazy" width="900" height="1600" style="object-position:50% 40%"></div><figcaption>Strapped square, block over block</figcaption></figure>
+      <figure class="print" style="--c:6"><div class="ph" style="--ar:1/1"><img src="img/container-pallets-clear.jpg" alt="Two wrapped pallets standing inside the container" loading="lazy" width="960" height="1280" style="object-position:50% 45%"></div><figcaption>Two across, wall to wall</figcaption></figure>
+      <figure class="print" style="--c:6"><div class="ph" style="--ar:1/1"><img src="img/container-pallets-dim.jpg" alt="Looking down the container at two loaded pallets" loading="lazy" width="960" height="1280" style="object-position:50% 50%"></div><figcaption>Down the length of the container</figcaption></figure>
     </div>
   </div>
 </section>
@@ -616,6 +715,77 @@ footer .brand-name{color:#F3ECE2;display:inline}
     bars.forEach(function(b,i){b.style.transition='transform 1.3s cubic-bezier(.16,1,.3,1) '+(i?.5:0)+'s, opacity .6s ease '+(i?.5:0)+'s';b.style.transform='';b.style.opacity=''});
   }
   if(btn)btn.addEventListener('click',replay);
+
+  /* the cocopeat cluster: rests behind the hero, drifts down the page, settles in the open space above the about heading */
+  var log=document.querySelector('.log'),hero=document.querySelector('.hero'),lead=document.querySelector('.log-slot');
+  if(log&&hero&&lead){
+    var G={};
+    function geo(){
+      var sy=window.pageYOffset,w=log.offsetWidth,h=log.offsetHeight,vw=window.innerWidth,vh=window.innerHeight;
+      var hr=hero.getBoundingClientRect(),lr=lead.getBoundingClientRect();
+      G.w=w;G.h=h;
+      var mt=log.offsetParent?log.offsetParent.getBoundingClientRect().top+sy:0;
+      G.x0=vw*.5-w/2;G.y0=hr.top+sy-mt+hr.height*.55-h/2;
+      G.x1=lr.left;G.y1=lr.top+sy-mt+lr.height/2-h/2;
+      G.S=Math.max(1,lr.top+sy+lr.height*.5-vh*.5);
+    }
+    function put(){
+      var p=reduce?0:Math.min(1,Math.max(0,window.pageYOffset/G.S));
+      var x=G.x0+(G.x1-G.x0)*p,y=G.y0+(G.y1-G.y0)*p;
+      var rot=-10+p*8+Math.sin(p*Math.PI)*-7;
+      log.style.transform='translate3d('+x.toFixed(1)+'px,'+y.toFixed(1)+'px,0) rotate('+rot.toFixed(2)+'deg)';
+    }
+    var tick=false;
+    function onS(){if(tick)return;tick=true;requestAnimationFrame(function(){tick=false;put()})}
+    geo();put();
+    window.addEventListener('scroll',onS,{passive:true});
+    window.addEventListener('resize',function(){geo();put()});
+    window.addEventListener('load',function(){geo();put()});
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){geo();put()});
+  }
+
+  /* ---------- motion: reveal on scroll ---------- */
+  var allow=!reduce&&'IntersectionObserver' in window;
+  if(allow){
+    document.documentElement.classList.add('js');
+    var $=function(s){return [].slice.call(document.querySelectorAll(s))};
+    /* SVG strokes drawn via pathLength=1 */
+    $('.checks svg path,.container-fig .shell').forEach(function(p){p.setAttribute('pathLength','1')});
+    /* tag plain text blocks */
+    $('.act-text>p.body,.about .lead,.lede2,.panel,.form,.maplink,.contact-grid .btn,.tip,.fine').forEach(function(e){
+      if(e.closest('.hero'))return;e.classList.add('rv')});
+    /* stagger groups */
+    $('.pillars,.checks,.ledger,.rows,.order ol,.strip dl,.stops,.contact-list').forEach(function(c){
+      c.setAttribute('data-stag','');[].slice.call(c.children).forEach(function(k,i){k.style.setProperty('--i',i)});
+      if(c.classList.contains('ledger'))[].slice.call(c.children).forEach(function(k,i){var d=k.querySelector('.dots');if(d)d.style.setProperty('--i',i)});
+    });
+    /* checkmarks need their own index */
+    $('.checks li').forEach(function(k,i){var p=k.querySelector('path');if(p)p.style.setProperty('--i',i)});
+    /* gallery print order */
+    $('.print').forEach(function(p){
+      var sibs=[].slice.call(p.parentNode.children).filter(function(x){return x.classList.contains('print')});
+      p.style.setProperty('--d',Math.min(sibs.indexOf(p),4)*.12+'s');
+    });
+    /* container pallets: far wall first, door last */
+    $('#pallets rect').forEach(function(r,i){var c=Math.floor(i/2);r.style.setProperty('--d',(.5+c*.1+(i%2)*.04)+'s')});
+    var prime=document.getElementById('grow');
+    if(prime&&gr){gr.querySelectorAll('rect').forEach(function(b){b.style.transformOrigin='0 50%';b.style.transformBox='fill-box';b.style.transform='scaleX(.15)';b.style.opacity='.4'})}
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(!e.isIntersecting)return;
+      var t=e.target;t.classList.add('in');io.unobserve(t);
+      if(t.classList.contains('panel')&&gr){setTimeout(function(){
+        gr.querySelectorAll('rect').forEach(function(b,i){b.style.transition='transform 1.3s cubic-bezier(.16,1,.3,1) '+(i?.5:0)+'s, opacity .6s ease '+(i?.5:0)+'s';b.style.transform='';b.style.opacity=''});
+      },300)}
+    })},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
+    $('.print,.stencil,.range h2,.why h2,.order h3,.rv,[data-stag],.container-fig').forEach(function(e){io.observe(e)});
+    /* nav follows the section on screen */
+    var links=$('.nav a'),secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))});
+    var so=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(!e.isIntersecting)return;var i=secs.indexOf(e.target);
+      links.forEach(function(a,k){a.classList.toggle('on',k===i)});
+    })},{rootMargin:'-45% 0px -50% 0px'});
+    secs.forEach(function(s){if(s)so.observe(s)});
+  }
 
   /* enquiry -> prefilled WhatsApp message (a mail backend can replace this at launch) */
   var form=document.getElementById('enquiry');
